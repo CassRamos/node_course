@@ -1,0 +1,18 @@
+{
+  "name": "2_external_modules",
+  "version": "1.0.0",
+  "description": "npm init test",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "using",
+    "minimist"
+  ],
+  "author": "Cass Ramos",
+  "license": "MIT",
+  "dependencies": {
+    "minimist": "^1.2.8"
+  }
+}
