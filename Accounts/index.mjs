@@ -26,6 +26,7 @@ async function operation() {
         if (action === "Create account") {
           createAccount();
         } else if (action === "Check balance") {
+          getAccountBalance();
         } else if (action === "Deposit") {
           deposit();
         } else if (action === "Withdraw") {
@@ -97,7 +98,7 @@ function deposit() {
     .then((answer) => {
       const accountName = answer["accountName"];
 
-      if (!checkAccount(accountName)) {
+      if (!checkIfAccountNotExists(accountName)) {
         return deposit();
       }
       inquirer
@@ -119,7 +120,7 @@ function deposit() {
     });
 }
 
-function checkAccount(accountName) {
+function checkIfAccountNotExists(accountName) {
   if (!fs.existsSync(`accounts/${accountName}.json`)) {
     console.log(
       chalk.bgRed.black("This account does not exist, choose another name")
@@ -160,3 +161,31 @@ function getAccount(accountName) {
 }
 
 operation();
+
+function getAccountBalance() {
+  inquirer
+    .prompt([
+      {
+        name: "accountName",
+        message: "Type your account name",
+      },
+    ])
+    .then((answer) => {
+      const accountName = answer["accountName"];
+
+      if (!checkIfAccountNotExists(accountName)) {
+        return getAccountBalance();
+      }
+      const accountData = getAccount(accountName);
+
+      console.log(
+        chalk.bgBlue.black(
+          `Hello... \nYour account balance is ${accountData.balance} `
+        )
+      );
+      operation();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
