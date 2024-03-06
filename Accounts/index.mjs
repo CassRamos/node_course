@@ -27,6 +27,7 @@ async function operation() {
           createAccount();
         } else if (action === "Check balance") {
         } else if (action === "Deposit") {
+          deposit();
         } else if (action === "Withdraw") {
         } else if (action === "Exit") {
           console.log(chalk.bgBlue.black("Thanks you for using Accounts"));
@@ -64,7 +65,9 @@ function buildAccount() {
 
       if (fs.existsSync(`accounts/${accountName}.json`)) {
         console.log(
-          chalk.bgRed.black("This account already exists. Please type another name.")
+          chalk.bgRed.black(
+            "This account already exists. Please type another name."
+          )
         );
         buildAccount();
       }
@@ -75,10 +78,85 @@ function buildAccount() {
           console.log(err);
         }
       );
-      console.log(chalk.greenBright("Congratulations! Your account has been created."));
+      console.log(
+        chalk.greenBright("Congratulations! Your account has been created.")
+      );
       operation();
     })
     .catch((err) => console.log(err));
+}
+
+function deposit() {
+  inquirer
+    .prompt([
+      {
+        name: "accountName",
+        message: "What is your account name",
+      },
+    ])
+    .then((answer) => {
+      const accountName = answer["accountName"];
+
+      if (!checkAccount(accountName)) {
+        return deposit();
+      }
+      inquirer
+        .prompt([
+          {
+            name: "amount",
+            message: "How much do you wish to deposit?",
+          },
+        ])
+        .then((answer) => {
+          const amount = answer["amount"];
+
+          addAmount(accountName, amount);
+          operation();
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function checkAccount(accountName) {
+  if (!fs.existsSync(`accounts/${accountName}.json`)) {
+    console.log(
+      chalk.bgRed.black("This account does not exist, choose another name")
+    );
+    return false;
+  }
+  return true;
+}
+
+function addAmount(accountName, amount) {
+  const accountData = getAccount(accountName);
+
+  if (!amount) {
+    console.log(chalk.bgBlack.red("A error occurred, please try again later"));
+    return deposit();
+  }
+  accountData.balance = parseFloat(amount) + parseFloat(accountData.balance);
+
+  fs.writeFileSync(
+    `accounts/${accountName}.json`,
+    JSON.stringify(accountData),
+    (err) => console.log(err)
+  );
+
+  console.log(
+    chalk.green(
+      `The amount of $${amount} has been deposited on ${accountName} account`
+    )
+  );
+}
+
+function getAccount(accountName) {
+  const accountJSON = fs.readFileSync(`accounts/${accountName}.json`, {
+    encoding: "utf-8",
+    flag: "r",
+  });
+  return JSON.parse(accountJSON);
 }
 
 operation();
