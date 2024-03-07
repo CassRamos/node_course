@@ -30,6 +30,7 @@ async function operation() {
         } else if (action === "Deposit") {
           deposit();
         } else if (action === "Withdraw") {
+          withdraw();
         } else if (action === "Exit") {
           console.log(chalk.bgBlue.black("Thanks you for using Accounts"));
           process.exit();
@@ -188,4 +189,64 @@ function getAccountBalance() {
     .catch((err) => {
       console.log(err);
     });
+}
+
+function withdraw() {
+  inquirer
+    .prompt([
+      {
+        name: "accountName",
+        message: "Type your account name",
+      },
+    ])
+    .then((answer) => {
+      const accountName = answer["accountName"];
+
+      if (!checkIfAccountNotExists(accountName)) {
+        return withdraw();
+      }
+      inquirer
+        .prompt([
+          {
+            name: "amount",
+            message: "How much would you like to withdraw?",
+          },
+        ])
+        .then((answer) => {
+          const amount = answer["amount"];
+
+          removeAmount(accountName, amount);
+        })
+        .catch((err) => console.log(err));
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function removeAmount(accountName, amount) {
+  const accountData = getAccount(accountName);
+
+  if (!amount) {
+    console.log(chalk.bgRed.black("A error ocurred, please try again later"));
+    return withdraw();
+  }
+
+  if (accountData.balance < amount) {
+    console.log(chalk.bgRed.black("Unavailable balance"));
+    return withdraw();
+  }
+
+  accountData.balance = parseFloat(accountData.balance) - parseFloat(amount);
+
+  fs.writeFileSync(
+    `accounts/${accountName}.json`,
+    JSON.stringify(accountData),
+    (err) => console.log(err)
+  );
+
+  console.log(
+    chalk.green(`A withdraw of $${amount} is realized on your account`)
+  );
+  operation();
 }
